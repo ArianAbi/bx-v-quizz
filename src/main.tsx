@@ -16,7 +16,7 @@ const router = createBrowserRouter([
     element: <Game />,
   },
   {
-    path: "/panel",
+    path: "/admin",
     element: <Admin />,
   },
 ]);
