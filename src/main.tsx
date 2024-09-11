@@ -4,41 +4,25 @@ import App from "./App.tsx";
 import "./css/global.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Game from "./Game.tsx";
-import ErrorBoundary from "./components/ErrorBoundary.tsx";
-import ErrorUI from "./components/ErrorUI.tsx";
 import Admin from "./Admin.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <ErrorBoundary fallback={<ErrorUI />}>
-        <App />
-      </ErrorBoundary>
-    ),
+    element: <App />,
   },
   {
     path: "/game",
-    element: (
-      <ErrorBoundary fallback={<ErrorUI />}>
-        <Game />
-      </ErrorBoundary>
-    ),
+    element: <Game />,
   },
   {
-    path: "/admin",
-    element: (
-      <ErrorBoundary fallback={<ErrorUI />}>
-        <Admin />
-      </ErrorBoundary>
-    ),
+    path: "/panel",
+    element: <Admin />,
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ErrorBoundary fallback={<ErrorUI />}>
-      <RouterProvider router={router} />
-    </ErrorBoundary>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
