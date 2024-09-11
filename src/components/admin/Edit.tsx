@@ -36,12 +36,10 @@ export default function Edit({
         .select("*")
         .eq("id", id)) as { data: QuestionBoxType[] };
 
-      console.log(data);
-
       const currectFormatOption = data[0].options.map((option) => {
         return {
           option: option,
-          isAnswer: option === data[0].answer ? true : false,
+          isAnswer: `${option}` === `${data[0].answer}` ? true : false,
         };
       });
 

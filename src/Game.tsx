@@ -3,8 +3,12 @@ import { supabase } from "./util/useSupabase";
 import { generateRandomIndexInRange } from "./util/useRandomIndexGenerator";
 import { QuestionBoxType } from "./types/question";
 import QuestionBox from "./components/QuestionBox";
+// @ts-ignore
+import { v4 as uuidv4 } from "uuid";
 
 export default function Game() {
+  const [session_id, setSessionId] = useState("");
+
   const [randomIndex, setRandomIndex] = useState<number[]>([0]);
   const [questions, setQuestions] = useState<QuestionBoxType[] | null>(null);
 
@@ -18,6 +22,8 @@ export default function Game() {
   }
 
   useEffect(() => {
+    setSessionId(uuidv4());
+
     getQuestions().then((questions) => {
       if (!questions) {
         return;
@@ -44,10 +50,12 @@ export default function Game() {
   return (
     <>
       <div className="w-full background-scroll-animation flex flex-col h-full items-center justify-center px-2 mx-auto">
-        <span className="px-3 py-2 rounded-full bg-red-600 mb-2">Test</span>
-
         {questions && (
-          <QuestionBox {...questions[randomIndex[0]]} nextFn={next} />
+          <QuestionBox
+            {...questions[randomIndex[0]]}
+            nextFn={next}
+            session_id={session_id}
+          />
         )}
       </div>
     </>

@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import "./css/crooked-frames.css";
+import { useState } from "react";
 
 function App() {
   const navigate = useNavigate();
+
+  const [name, setName] = useState("");
 
   return (
     <div className="w-full h-full background-scroll-animation">
@@ -30,6 +33,8 @@ function App() {
                 <input
                   className="w-full pl-3 py-2 rounded-lg outline-cyan-300 neon-shadow"
                   placeholder="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <hr className="border-black border-opacity-40" />
@@ -56,7 +61,7 @@ function App() {
             onClick={() => {
               document.body.classList.add("closed");
               setTimeout(() => {
-                navigate(`/game`);
+                navigate(`/game?name=${name}`);
                 document.body.classList.remove("closed");
               }, 500);
             }}

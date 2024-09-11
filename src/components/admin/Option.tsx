@@ -55,6 +55,7 @@ export default function Option({
                 className="size-[25px]"
                 type="radio"
                 name="option"
+                checked={option.isAnswer}
                 onChange={(e) => {
                   if (e.target.checked) {
                     const newOptions = [...options];
