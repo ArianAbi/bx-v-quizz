@@ -6,7 +6,7 @@ export default function Option({
   setOptions: CallableFunction;
 }) {
   function add() {
-    if (options.length >= 4) {
+    if (options.length >= 6) {
       return;
     }
 

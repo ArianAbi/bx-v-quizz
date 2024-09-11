@@ -168,7 +168,7 @@ export default function Edit({
               onClick={onAdd}
               type="submit"
             >
-              Add
+              Update
             </button>
           </div>
         </div>

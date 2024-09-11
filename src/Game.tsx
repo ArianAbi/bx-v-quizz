@@ -16,7 +16,6 @@ export default function Game() {
 
   async function getQuestions() {
     const { data } = await supabase.from("questions").select("*");
-    console.log(_loading);
 
     return data;
   }

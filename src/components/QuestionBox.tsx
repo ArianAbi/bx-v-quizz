@@ -1,21 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QuestionBoxType } from "../types/question";
 import Category from "./Category";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../util/useSupabase";
+import Revealed from "./Revealed";
 
 export default function QuestionBox({
   question,
   options,
   point,
   nextFn,
+  answer,
+  explanation,
   session_id,
-}: QuestionBoxType & { nextFn: () => void; session_id: string }) {
+}: QuestionBoxType & {
+  nextFn: () => void;
+  session_id: string;
+}) {
   const [searchParams] = useSearchParams();
 
   const [submiting, setSubmiting] = useState(false);
 
-  const [answer, setAnswer] = useState<null | string>(null);
+  const [userAnswer, setUserAnswer] = useState<null | string>(null);
+
+  const [revealed, setRevealed] = useState(false);
 
   const name = searchParams.get("name");
   const [points, setPoints] = useState(0);
@@ -23,20 +31,23 @@ export default function QuestionBox({
   async function onAnswer() {
     setSubmiting(true);
 
+    setRevealed(true);
+
     try {
       await supabase.from("answers").insert([
         {
           name: name,
           question: question,
-          answer: answer,
+          answer: userAnswer,
           points: point,
           session_id: session_id,
         },
       ]);
       setSubmiting(false);
-      updatePoints();
-      nextFn();
-      setAnswer("");
+
+      if (userAnswer == answer) {
+        updatePoints();
+      }
     } catch (err) {
       alert("Failed");
       setSubmiting(false);
@@ -68,8 +79,19 @@ export default function QuestionBox({
         className="bg-[#f8f8f8] text-black w-full max-w-[500px] flex flex-col items-center justify-center gap-2 rounded-xl drop-shadow-lg py-4"
         style={{ direction: "rtl" }}
       >
-        <h2 className="text-center text-lg font-semibold mx-4">{name}</h2>
-        <span>Points : {points}</span>
+        <Revealed
+          explanation={explanation ? explanation : ""}
+          open={revealed}
+          setOpen={setRevealed}
+          next={nextFn}
+          setUserAnswer={setUserAnswer}
+          givenAnswer={userAnswer ? userAnswer : ""}
+          correctAnswer={answer}
+        />
+
+        <h2 className="text-center text-lg font-semibold mx-4">
+          {name} Points : <span className="italic">{points}</span>
+        </h2>
 
         <h2 className="text-center text-lg font-semibold mx-4">{question}</h2>
 
@@ -88,8 +110,8 @@ export default function QuestionBox({
                   className="form-radio peer ring-0 scale-90 peer cursor-pointer"
                   type="radio"
                   name="question"
-                  checked={answer === _option}
-                  onChange={() => setAnswer(_option)}
+                  checked={userAnswer === _option}
+                  onChange={() => setUserAnswer(_option)}
                 />
                 <div className="size-[16px] rounded-full peer-disabled:saturate-50 bg-white peer-checked:bg-sky-500 peer-checked:ring-offset-1 ring-sky-500 peer-checked:scale-[1.2] transition-all duration-75 ring-2 absolute right-0 top-2/4 -translate-y-2/4 pointer-events-none"></div>
                 <span className="peer-checked:border-b-2 border-sky-500">
@@ -101,7 +123,7 @@ export default function QuestionBox({
         </div>
 
         <button
-          disabled={answer === null}
+          disabled={userAnswer === null}
           className={`px-4 py-2 mt-4 bg-emerald-500 rounded-lg disabled:saturate-[0.2] text-white font-semibold ${
             submiting ? "animate-pulse" : ""
           }`}
@@ -110,7 +132,7 @@ export default function QuestionBox({
             onAnswer();
           }}
         >
-          {submiting ? "Submiting" : "Next"}
+          {submiting ? "Submiting" : "Submit"}
         </button>
       </div>
     </>
