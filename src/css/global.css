@@ -8,6 +8,23 @@
   font-family: "Rubik", sans-serif;
 }
 
+.hardcore-timer {
+  animation: timer 8s ease-out forwards;
+}
+
+.insane-timer {
+  animation: timer 6s ease-out forwards;
+}
+
+@keyframes timer {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 .neon-shadow {
   transition: box-shadow 0.1s ease-in-out;
   box-shadow: 0px 0px 0px -5px rgb(93, 214, 245);

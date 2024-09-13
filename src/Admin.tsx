@@ -41,7 +41,7 @@ export default function Admin() {
     setLoading(true);
 
     try {
-      const { data } = await supabase.from("questions").select("*").range(0, 9);
+      const { data } = await supabase.from("questions").select("*")
 
       setQuestions(data);
       setLoading(false);

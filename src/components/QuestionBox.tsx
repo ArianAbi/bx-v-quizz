@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QuestionBoxType } from "../types/question";
 import Category from "./Category";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../util/useSupabase";
 import Revealed from "./Revealed";
+import GameEnd from "./GameEnd";
 
 export default function QuestionBox({
   question,
@@ -17,7 +18,13 @@ export default function QuestionBox({
   nextFn: () => void;
   session_id: string;
 }) {
+  const [endOpen, setEndOpen] = useState(false);
+
   const [searchParams] = useSearchParams();
+
+  const timerRef = useRef<NodeJS.Timeout>();
+
+  const [timerUpdater, setTimerUpdater] = useState(0);
 
   const [submiting, setSubmiting] = useState(false);
 
@@ -26,10 +33,38 @@ export default function QuestionBox({
   const [revealed, setRevealed] = useState(false);
 
   const name = searchParams.get("name");
+  const diff = searchParams.get("diff");
+
+  // difficality timer
+  useEffect(() => {
+    // hardcore
+    if (diff === "Hardcore") {
+      timerRef.current = setTimeout(() => {
+        autoAnswer();
+      }, 8000);
+    } else if (diff === "INSANE") {
+      timerRef.current = setTimeout(() => {
+        autoAnswer();
+      }, 6000);
+    } else {
+      clearTimeout(timerRef.current);
+    }
+  }, [timerUpdater]);
+
+  function autoAnswer() {
+    if (userAnswer === null) {
+      setUserAnswer("empty");
+    }
+
+    onAnswer();
+  }
+
   const [points, setPoints] = useState(0);
 
   async function onAnswer() {
     setSubmiting(true);
+
+    console.log(answer);
 
     setRevealed(true);
 
@@ -39,15 +74,19 @@ export default function QuestionBox({
           name: name,
           question: question,
           answer: userAnswer,
-          points: point,
+          points: answer === userAnswer ? point : point * -1,
           session_id: session_id,
         },
       ]);
-      setSubmiting(false);
 
       if (userAnswer == answer) {
         updatePoints();
+      } else {
+        if (diff === "INSANE") {
+          updatePoints();
+        }
       }
+      setSubmiting(false);
     } catch (err) {
       alert("Failed");
       setSubmiting(false);
@@ -63,34 +102,56 @@ export default function QuestionBox({
         .eq("name", name)
         .eq("session_id", session_id);
 
-      const acumPoint = data?.reduce(
-        (acum, current) => acum + current.points,
-        0
-      );
-      console.log(acumPoint);
+      const acumPoint = data?.reduce((acum, current) => {
+        const realPoint =
+          diff === "INSANE"
+            ? current.points
+            : Math.abs(parseFloat(current.points));
+
+        console.log(current.points);
+
+        return acum + realPoint;
+      }, 0);
       setPoints(acumPoint ? acumPoint : 0);
     } catch (err) {
       console.log(err);
     }
   }
+
   return (
     <>
+      <GameEnd score={points} name={name ? name : ""} open={endOpen} />
+
+      <Revealed
+        explanation={explanation ? explanation : ""}
+        open={revealed}
+        setOpen={setRevealed}
+        next={nextFn}
+        setUserAnswer={setUserAnswer}
+        setTimerUpdater={setTimerUpdater}
+        setEndOpen={setEndOpen}
+        givenAnswer={userAnswer ? userAnswer : ""}
+        correctAnswer={answer}
+      />
+
       <div
-        className="bg-[#f8f8f8] text-black w-full max-w-[500px] flex flex-col items-center justify-center gap-2 rounded-xl drop-shadow-lg py-4"
+        className="bg-[#f8f8f8] text-black w-full max-w-[500px] flex flex-col items-center justify-center gap-2 rounded-xl drop-shadow-lg py-4 overflow-hidden"
         style={{ direction: "rtl" }}
       >
-        <Revealed
-          explanation={explanation ? explanation : ""}
-          open={revealed}
-          setOpen={setRevealed}
-          next={nextFn}
-          setUserAnswer={setUserAnswer}
-          givenAnswer={userAnswer ? userAnswer : ""}
-          correctAnswer={answer}
-        />
+        {/* Timer */}
+        <div
+          style={{
+            visibility:
+              diff === "Hardcore" || diff === "INSANE" ? "visible" : "hidden",
+          }}
+          key={timerUpdater}
+          className={`h-3 w-full bg-red-500 absolute top-0 left-0 
+          ${diff === "Hardcore" ? "hardcore-timer" : ""}
+          ${diff === "INSANE" ? "insane-timer" : ""}`}
+        ></div>
 
         <h2 className="text-center text-lg font-semibold mx-4">
-          {name} Points : <span className="italic">{points}</span>
+          {name} Score : <span className="italic">{points}</span>
         </h2>
 
         <h2 className="text-center text-lg font-semibold mx-4">{question}</h2>
@@ -123,11 +184,15 @@ export default function QuestionBox({
         </div>
 
         <button
-          disabled={userAnswer === null}
+          disabled={
+            userAnswer === null || diff === "Hardcore" || diff === "INSANE"
+          }
           className={`px-4 py-2 mt-4 bg-emerald-500 rounded-lg disabled:saturate-[0.2] text-white font-semibold ${
             submiting ? "animate-pulse" : ""
           }`}
-          style={{ direction: "rtl" }}
+          style={{
+            direction: "rtl",
+          }}
           onClick={() => {
             onAnswer();
           }}

@@ -118,7 +118,7 @@ export default function Edit({
             Edit Question
           </h3>
 
-          <input
+          <textarea
             className="drop-shadow-md w-full border-2 bg-gray-50 border-emerald-300 rounded-full px-4 py-3 focus:outline-emerald-500 text-[#333] focus:bg-white"
             placeholder="Question"
             value={question}
